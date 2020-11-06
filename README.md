@@ -1,2 +1,0 @@
-# ipesquisa
-Created with CodeSandbox
