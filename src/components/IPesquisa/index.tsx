@@ -19,6 +19,7 @@ export interface IReturnedData {
 interface IProps extends React.HTMLAttributes<HTMLInputElement> {
   label: string;
   name: string;
+  initValue: IData;
   searchOptions: ISearchOption[];
   loadOptions: (
     term: string,
@@ -33,10 +34,10 @@ interface IProps extends React.HTMLAttributes<HTMLInputElement> {
 const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
   (
     {
-      // defaultValue = 0,
       loadOptions,
       name,
       label,
+      initValue = {} as IData,
       placeholder = "Pesquisar",
       limitOptions = 2,
       offsetOptions = 0,
@@ -45,7 +46,7 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
     ref
   ) => {
     const [term, setTerm] = React.useState<string>("");
-    const [selected, setSelected] = React.useState<IData>({} as IData);
+    const [selected, setSelected] = React.useState<IData>(initValue);
     const [data, setData] = React.useState<IData[]>();
     // const [loading, setLoading] = React.useState<boolean>(true); // Estava true por conta de obter os dados ao montar o component
     const [loading, setLoading] = React.useState<boolean>(false);
@@ -65,26 +66,10 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // React.useEffect(() => {
-    //   // Uma importante questão a ser respondida: Será responsabilidade do IPequisa
-    //   // carregar a informação inicial ou esta será previamente obtidas e enviada
-    //   // ao componente?
-    //   async function load(id: number) {
-    //     setLoading(true);
-
-    //     const res = (await loadOptions(id)) as IData;
-    //     setSelected(res);
-    //     setTerm(res.value);
-    //     setData([]);
-
-    //     setLoading(false);
-    //   }
-
-    //   if (defaultValue) {
-    //     load(defaultValue as number);
-    //   }
-    //   // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, []);
+    React.useEffect(() => {
+      setTerm(selected.value);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const onSelect = (id: number) => {
       const select: IData = data?.filter((d: IData) => d.id === id)[0] as IData;
@@ -130,6 +115,13 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
         setShowData(false);
         setOffset(0);
       }
+    };
+
+    const handleOnClickSearch = (
+      event: React.MouseEvent<HTMLButtonElement>
+    ) => {
+      event.stopPropagation();
+      onSearch();
     };
 
     const handleChangeTerm = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,8 +186,12 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
           onBlur={handleBlurTerm}
         />
 
+        <button type="button" onClick={handleOnClickSearch}>
+          Buscar
+        </button>
+
         <select
-          value={selectedSearchOption?.field}
+          value={selectedSearchOption.field}
           onChange={handleChangeOptionToSerach}
         >
           {searchOptions.map((option) => (
