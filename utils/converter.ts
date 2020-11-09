@@ -10,7 +10,5 @@ export function converterResultToIReturnedData(result: any[]): IReturnedData {
     ret.data = [...ret.data, { id, value: `${sigla} - ${nome}` }];
   });
 
-  console.log(ret);
-
   return ret;
 }

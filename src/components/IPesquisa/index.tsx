@@ -19,7 +19,7 @@ export interface IReturnedData {
 interface IProps extends React.HTMLAttributes<HTMLInputElement> {
   label: string;
   name: string;
-  initValue: IData;
+  initValue: IData | null;
   searchOptions: ISearchOption[];
   loadOptions: (
     term: string,
@@ -37,7 +37,7 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
       loadOptions,
       name,
       label,
-      initValue = {} as IData,
+      initValue = null,
       placeholder = "Pesquisar",
       limitOptions = 2,
       offsetOptions = 0,
@@ -46,9 +46,8 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
     ref
   ) => {
     const [term, setTerm] = React.useState<string>("");
-    const [selected, setSelected] = React.useState<IData>(initValue);
+    const [selected, setSelected] = React.useState<IData | null>(initValue);
     const [data, setData] = React.useState<IData[]>();
-    // const [loading, setLoading] = React.useState<boolean>(true); // Estava true por conta de obter os dados ao montar o component
     const [loading, setLoading] = React.useState<boolean>(false);
     const [showData, setShowData] = React.useState<boolean>(false);
 
@@ -67,7 +66,7 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
     }, []);
 
     React.useEffect(() => {
-      setTerm(selected.value);
+      setTerm(selected ? selected.value : "");
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -75,7 +74,7 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
       const select: IData = data?.filter((d: IData) => d.id === id)[0] as IData;
 
       if (!select) {
-        setSelected({} as IData);
+        setSelected(null);
       } else {
         setTerm(select.value);
         setSelected(select);
@@ -89,7 +88,7 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
     const onSearch = async function () {
       setLoading(true);
 
-      setSelected({} as IData);
+      setSelected(null);
 
       const res: IReturnedData = (await loadOptions(
         term,
@@ -111,7 +110,7 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
         event.preventDefault();
         onSearch();
       } else {
-        setSelected({} as IData);
+        setSelected(null);
         setShowData(false);
         setOffset(0);
       }
@@ -130,7 +129,7 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
 
     const handleBlurTerm = (event: React.ChangeEvent<HTMLInputElement>) => {
       event.stopPropagation();
-      const isNotSelected = !Object.keys(selected).length;
+      const isNotSelected = selected ? !Object.keys(selected).length : true; //Verificar lógica
       const isNotData = !data?.length;
 
       // se não tem nada selecionado e pesquisado
@@ -176,7 +175,12 @@ const IPesquisa = React.forwardRef<HTMLInputElement, IProps>(
     return (
       <>
         <label>{label}: </label>
-        <input type="hidden" ref={ref} name={name} defaultValue={selected.id} />
+        <input
+          type="hidden"
+          ref={ref}
+          name={name}
+          value={selected ? selected.id : ""}
+        />
         <input
           type="text"
           placeholder={placeholder}
